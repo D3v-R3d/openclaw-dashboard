@@ -430,6 +430,8 @@ class Dashboard {
         const duration = (playback && playback.duration_ms) || 0;
         
         const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
+        const currentTime = this.formatDuration(progress);
+        const totalTime = this.formatDuration(duration);
         
         return `<div class="spotify-player">
             <div class="spotify-track-info">
@@ -439,6 +441,7 @@ class Dashboard {
             <div class="spotify-progress-bar">
                 <div style="width: ${progressPercent}%"></div>
             </div>
+            <div class="spotify-time">${currentTime} / ${totalTime}</div>
             <div class="spotify-controls">
                 <button onclick="dashboard.spotifyPrevious()">⏮️</button>
                 <button onclick="dashboard.spotifyPlayPause()">${isPlaying ? '⏸️' : '▶️'}</button>
@@ -523,6 +526,15 @@ class Dashboard {
         if (element) {
             element.textContent = new Date().toLocaleTimeString('fr-FR');
         }
+    }
+    
+        // Utility: Format duration in ms to mm:ss
+    formatDuration(ms) {
+        if (!ms || ms <= 0) return '0:00';
+        const seconds = Math.floor(ms / 1000);
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
     }
 }
 

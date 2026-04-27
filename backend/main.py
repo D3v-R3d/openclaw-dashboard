@@ -195,5 +195,5 @@ async def update_cards():
             await asyncio.sleep(5)
 
 if __name__ == "__main__":
-    # Hot reload enabled for development
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True, reload_dirs=["/app/backend", "/app/frontend"])
+    # Hot reload disabled to prevent auto-refresh
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=False)
