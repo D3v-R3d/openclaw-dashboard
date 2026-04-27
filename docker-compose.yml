@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  dashboard:
+    build: .
+    container_name: openclaw-dashboard
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./data:/app/data
+      - ./frontend:/app/frontend:ro
+    environment:
+      - PYTHONUNBUFFERED=1
+      - DASHBOARD_DB_PATH=/app/data/dashboard.db
+    networks:
+      - dashboard-network
+
+networks:
+  dashboard-network:
+    driver: bridge

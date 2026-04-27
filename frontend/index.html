@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le Command Center</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Hot reload support -->
+    <meta http-equiv="refresh" content="30">
+</head>
+<body>
+    <div class="app">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="logo">
+                    <h1>Le Command Center</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="theme-toggle" class="btn-icon" title="Changer de thème">🌓</button>
+                    <button id="refresh-btn" class="btn-icon" title="Rafraîchir les données">🔄</button>
+                    <span id="connection-status" class="status-badge">🟢</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Cards Grid -->
+            <div class="cards-grid" id="cards-container">
+                <!-- Cards will be injected here -->
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>Le Command Center v1.0 • Raspberry Pi • <span id="last-update">-</span></p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
