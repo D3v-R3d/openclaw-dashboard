@@ -18,6 +18,7 @@ import uvicorn
 from cards.downloads import DownloadsCard
 from cards.weather import WeatherCard
 from cards.suggestions import SuggestionsCard
+from cards.spotify import SpotifyCard
 
 app = FastAPI(title="OpenClaw Dashboard", version="1.0.0")
 
@@ -44,6 +45,7 @@ CARDS: Dict[str, Any] = {
     "downloads": DownloadsCard(),
     "weather": WeatherCard(),
     "suggestions": SuggestionsCard(),
+    "spotify": SpotifyCard(),
 }
 
 # WebSocket connections
@@ -107,6 +109,61 @@ async def refresh_card(card_id: str):
     if hasattr(card, 'refresh'):
         card.refresh()
     return {"status": "refreshed"}
+
+
+# Spotify API endpoints
+@app.get("/api/cards/spotify/search")
+async def spotify_search(query: str, type: str = "track", limit: int = 10):
+    """Search Spotify for tracks, artists, or albums"""
+    card = CARDS.get("spotify")
+    if not card:
+        return {"error": "Spotify card not found"}
+    return await card.search(query, type, limit)
+
+
+@app.post("/api/cards/spotify/play/{track_id}")
+async def spotify_play(track_id: str):
+    """Play a specific track"""
+    card = CARDS.get("spotify")
+    if not card:
+        return {"error": "Spotify card not found"}
+    return await card.play_track(track_id)
+
+
+@app.post("/api/cards/spotify/pause")
+async def spotify_pause():
+    """Pause playback"""
+    card = CARDS.get("spotify")
+    if not card:
+        return {"error": "Spotify card not found"}
+    return await card.pause()
+
+
+@app.post("/api/cards/spotify/resume")
+async def spotify_resume():
+    """Resume playback"""
+    card = CARDS.get("spotify")
+    if not card:
+        return {"error": "Spotify card not found"}
+    return await card.resume()
+
+
+@app.post("/api/cards/spotify/next")
+async def spotify_next():
+    """Skip to next track"""
+    card = CARDS.get("spotify")
+    if not card:
+        return {"error": "Spotify card not found"}
+    return await card.next_track()
+
+
+@app.post("/api/cards/spotify/previous")
+async def spotify_previous():
+    """Go to previous track"""
+    card = CARDS.get("spotify")
+    if not card:
+        return {"error": "Spotify card not found"}
+    return await card.previous_track()
 
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):

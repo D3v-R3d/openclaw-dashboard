@@ -221,6 +221,7 @@ class Dashboard {
             'suggestions': '💡',
             'system': '💻',
             'network': '🌐',
+            'spotify': '🎵',
             'default': '📊'
         };
         return icons[cardId] || icons['default'];

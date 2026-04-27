@@ -221,6 +221,7 @@ class Dashboard {
             'suggestions': '💡',
             'system': '💻',
             'network': '🌐',
+            'spotify': '🎵',
             'default': '📊'
         };
         return icons[cardId] || icons['default'];
@@ -257,6 +258,9 @@ class Dashboard {
                 break;
             case 'suggestions':
                 content.innerHTML = this.renderSuggestionsCard(cardData.data);
+                break;
+            case 'spotify':
+                content.innerHTML = this.renderSpotifyCard(cardData.data);
                 break;
             default:
                 content.innerHTML = `<pre>${JSON.stringify(cardData.data, null, 2)}</pre>`;
@@ -390,6 +394,128 @@ class Dashboard {
         fetch('/api/cards/suggestions/refresh', { method: 'POST' })
             .then(() => this.fetchCards())
             .catch(err => console.error('Error refreshing suggestions:', err));
+    }
+
+
+    // Spotify Card Renderer
+    renderSpotifyCard(data) {
+        if (!data) data = {};
+        
+        if (!data.available) {
+            return `<div class="spotify-status">
+                <div class="spotify-status-icon">🎧</div>
+                <div class="spotify-status-text">SpotAPI n'est pas installé</div>
+            </div>`;
+        }
+
+        if (!data.logged_in) {
+            return `<div class="spotify-login">
+                <div class="spotify-login-header">
+                    <div class="spotify-login-icon">🎧</div>
+                    <h3>Connectez votre compte Spotify</h3>
+                </div>
+                <button class="spotify-btn" onclick="dashboard.spotifyRefresh()">🔄 Rafraîchir</button>
+            </div>`;
+        }
+
+        return this.renderSpotifyPlayer(data);
+    }
+
+    renderSpotifyPlayer(data) {
+        const playback = (data && data.playback_state) || {};
+        const isPlaying = (playback && playback.is_playing) || false;
+        const trackName = (playback && playback.track_name) || 'Aucune lecture';
+        const artistName = (playback && playback.artist_name) || '-';
+        const progress = (playback && playback.progress_ms) || 0;
+        const duration = (playback && playback.duration_ms) || 0;
+        
+        const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
+        
+        return `<div class="spotify-player">
+            <div class="spotify-track-info">
+                <div>${trackName}</div>
+                <div>${artistName}</div>
+            </div>
+            <div class="spotify-progress-bar">
+                <div style="width: ${progressPercent}%"></div>
+            </div>
+            <div class="spotify-controls">
+                <button onclick="dashboard.spotifyPrevious()">⏮️</button>
+                <button onclick="dashboard.spotifyPlayPause()">${isPlaying ? '⏸️' : '▶️'}</button>
+                <button onclick="dashboard.spotifyNext()">⏭️</button>
+            </div>
+            <div class="spotify-search">
+                <input type="text" id="spotify-search-input" placeholder="Rechercher..."
+                       onkeypress="if(event.key==='Enter')dashboard.spotifySearch()">
+                <button onclick="dashboard.spotifySearch()">🔍</button>
+            </div>
+            <div id="spotify-search-results"></div>
+        </div>`;
+    }
+
+    async spotifySearch() {
+        const input = document.getElementById('spotify-search-input');
+        if (!input) return;
+        const query = input.value.trim();
+        if (!query) return;
+        
+        try {
+            const response = await fetch(`/api/cards/spotify/search?query=${encodeURIComponent(query)}&type=track&limit=10`);
+            const data = await response.json();
+            
+            const resultsDiv = document.getElementById('spotify-search-results');
+            if (!resultsDiv) return;
+            
+            if (data.tracks && data.tracks.length > 0) {
+                resultsDiv.innerHTML = data.tracks.map(track => `
+                    <div onclick="dashboard.spotifyPlayTrack('${track.id}')"
+                         style="cursor: pointer; padding: 8px; border-bottom: 1px solid #eee;">
+                        <div>${track.name}</div>
+                        <div style="font-size: 0.8em; color: #666;">${track.artist}</div>
+                    </div>
+                `).join('');
+            } else {
+                resultsDiv.innerHTML = '<div>Aucun résultat</div>';
+            }
+        } catch (e) {
+            console.error('Search error:', e);
+        }
+    }
+
+    async spotifyPlayTrack(trackId) {
+        try {
+            await fetch(`/api/cards/spotify/play/${trackId}`, { method: 'POST' });
+        } catch (e) {
+            console.error('Play error:', e);
+        }
+    }
+
+    async spotifyPlayPause() {
+        try {
+            await fetch('/api/cards/spotify/resume', { method: 'POST' });
+        } catch (e) {
+            console.error('Play/pause error:', e);
+        }
+    }
+
+    async spotifyNext() {
+        try {
+            await fetch('/api/cards/spotify/next', { method: 'POST' });
+        } catch (e) {
+            console.error('Next error:', e);
+        }
+    }
+
+    async spotifyPrevious() {
+        try {
+            await fetch('/api/cards/spotify/previous', { method: 'POST' });
+        } catch (e) {
+            console.error('Previous error:', e);
+        }
+    }
+
+    async spotifyRefresh() {
+        this.fetchCards();
     }
 
     updateTimestamp() {
